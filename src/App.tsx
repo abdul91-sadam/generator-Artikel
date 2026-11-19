@@ -13,6 +13,29 @@ import { ReferenceManagerView } from './components/ReferenceManagerView';
 import { TopNav, type AppView } from './components/TopNav';
 import type { ActivityLog, ArticleDocument, ReferenceItem } from './types/journal';
 
+const LOCAL_STORAGE_KEY = 'journal_ai_writer_workspace_v1';
+
+interface CachedWorkspace {
+  articles: ArticleDocument[];
+  references: ReferenceItem[];
+  activities: ActivityLog[];
+}
+
+function readLocalWorkspace(): CachedWorkspace | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<CachedWorkspace>;
+    return {
+      articles: Array.isArray(parsed.articles) ? parsed.articles : [],
+      references: Array.isArray(parsed.references) ? parsed.references : [],
+      activities: Array.isArray(parsed.activities) ? parsed.activities : [],
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const [activeView, setActiveView] = useState<AppView>('dashboard');
   const [articles, setArticles] = useState<ArticleDocument[]>([]);
@@ -24,9 +47,22 @@ export default function App() {
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  useEffect(() => {
+    if (isLoadingWorkspace) return;
+    try {
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify({ articles, references, activities })
+      );
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [articles, references, activities, isLoadingWorkspace]);
+
   const loadWorkspace = useCallback(async () => {
     setIsLoadingWorkspace(true);
     setLoadError(null);
+    const cached = readLocalWorkspace();
     try {
       const res = await fetch('/api/workspace');
       if (!res.ok) throw new Error('Gagal memuat ruang kerja dari server.');
@@ -35,15 +71,37 @@ export default function App() {
         references?: ReferenceItem[];
         activities?: ActivityLog[];
       };
-      const loadedArticles = data.articles ?? [];
-      setArticles(loadedArticles);
-      setReferences(data.references ?? []);
-      setActivities(data.activities ?? []);
-      if (loadedArticles.length > 0) {
-        setActiveArticleId((prev) => prev || loadedArticles[0].id);
+      const serverArticles = data.articles ?? [];
+      const serverRefs = data.references ?? [];
+      const serverActs = data.activities ?? [];
+
+      const useCachedFallback =
+        serverArticles.length === 0 &&
+        serverRefs.length === 0 &&
+        cached &&
+        (cached.articles.length > 0 || cached.references.length > 0);
+
+      const finalArticles = useCachedFallback ? cached.articles : serverArticles;
+      const finalRefs = useCachedFallback ? cached.references : serverRefs;
+      const finalActs = useCachedFallback ? cached.activities : serverActs;
+
+      setArticles(finalArticles);
+      setReferences(finalRefs);
+      setActivities(finalActs);
+      if (finalArticles.length > 0) {
+        setActiveArticleId((prev) => prev || finalArticles[0].id);
       }
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : 'Gagal terhubung ke server.');
+      if (cached && (cached.articles.length > 0 || cached.references.length > 0)) {
+        setArticles(cached.articles);
+        setReferences(cached.references);
+        setActivities(cached.activities);
+        if (cached.articles.length > 0) {
+          setActiveArticleId((prev) => prev || cached.articles[0].id);
+        }
+      } else {
+        setLoadError(err instanceof Error ? err.message : 'Gagal terhubung ke server.');
+      }
     } finally {
       setIsLoadingWorkspace(false);
     }

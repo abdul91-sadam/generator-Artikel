@@ -1,4 +1,5 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import type { ActivityLog, ArticleDocument, ReferenceItem } from '../src/types/journal.ts';
 
@@ -8,7 +9,10 @@ export interface WorkspaceData {
   activities: ActivityLog[];
 }
 
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+const IS_VERCEL = process.env.VERCEL === '1' || Boolean(process.env.VERCEL_ENV);
+const DATA_DIR = IS_VERCEL
+  ? path.join(os.tmpdir(), 'journal-ai-writer')
+  : path.resolve(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'workspace.json');
 
 function ensureStorage(): void {

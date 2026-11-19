@@ -210,6 +210,8 @@ export const ArticleEditorView: React.FC<ArticleEditorViewProps> = ({
           articleId: activeArticle.id,
           sectionKey: activeSection,
           customPrompt: isRegenerate ? regenPrompt.trim() || undefined : undefined,
+          article: activeArticle,
+          articleRefs,
         }),
       });
       const data = (await res.json()) as {
@@ -274,7 +276,11 @@ export const ArticleEditorView: React.FC<ArticleEditorViewProps> = ({
       const res = await fetch('/api/export/docx', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ articleId: activeArticle.id }),
+        body: JSON.stringify({
+          articleId: activeArticle.id,
+          article: activeArticle,
+          articleRefs,
+        }),
       });
       if (!res.ok) {
         const errData = (await res.json()) as { error?: string };

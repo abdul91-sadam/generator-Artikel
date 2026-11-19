@@ -246,7 +246,12 @@ export const ReferenceManagerView: React.FC<ReferenceManagerViewProps> = ({
   const handleVerifyReference = async (id: string) => {
     setVerifyingId(id);
     try {
-      const res = await fetch(`/api/references/${id}/verify`, { method: 'POST' });
+      const targetRef = references.find((r) => r.id === id);
+      const res = await fetch(`/api/references/${id}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: targetRef }),
+      });
       const data = (await res.json()) as {
         reference?: ReferenceItem;
         activities?: ActivityLog[];

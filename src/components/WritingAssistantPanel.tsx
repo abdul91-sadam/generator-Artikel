@@ -119,6 +119,7 @@ export const WritingAssistantPanel: React.FC<WritingAssistantPanelProps> = ({
           targetLanguage,
           citationStyle: article.citationStyle,
           articleId: article.id,
+          article,
         }),
       });
       const data = (await res.json()) as {

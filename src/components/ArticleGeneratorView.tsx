@@ -129,6 +129,8 @@ export const ArticleGeneratorView: React.FC<ArticleGeneratorViewProps> = ({
         body: JSON.stringify({
           articleId: generatedArticle.id,
           sectionKey,
+          article: generatedArticle,
+          articleRefs: matchedRefs,
         }),
       });
       const data = (await res.json()) as {
@@ -170,6 +172,8 @@ export const ArticleGeneratorView: React.FC<ArticleGeneratorViewProps> = ({
           body: JSON.stringify({
             articleId: currentArticle.id,
             sectionKey: key,
+            article: currentArticle,
+            articleRefs: matchedRefs,
           }),
         });
         const data = (await res.json()) as {

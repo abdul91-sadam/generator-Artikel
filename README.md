@@ -33,9 +33,10 @@ git push -u origin main
    - **Framework Preset**: Vite
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
-   - **Serverless API**: `/api/index.ts` menangani seluruh rute `/api/*`
+   - **Serverless API**: `/api/index.mjs` menangani seluruh rute `/api/*` (dibangun otomatis dari `server/vercelEntry.ts` saat `npm run build`)
 3. Tambahkan **Environment Variables** pada pengaturan proyek Vercel:
    - `GEMINI_API_KEY` = API key Gemini Anda
+   - *(Jangan menambahkan `NODE_ENV=production` secara manual di Environment Variables agar `vite` & `esbuild` tetap terpasang saat tahap build Vercel)*
 4. Klik **Deploy**.
 
 > Catatan: Pada mode serverless Vercel, data ruang kerja juga disinkronkan secara otomatis ke `localStorage` browser agar naskah, referensi, dan riwayat aktivitas tetap aman meskipun terjadi *cold start*.

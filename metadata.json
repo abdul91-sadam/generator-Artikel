@@ -1,0 +1,6 @@
+{
+  "name": "JOURNAL AI WRITER",
+  "description": "Platform kecerdasan buatan profesional untuk menyusun, mengembangkan, menyunting, mengelola referensi terverifikasi, dan memformat artikel ilmiah ke jurnal akademik.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
